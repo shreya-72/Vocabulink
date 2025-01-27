@@ -58,13 +58,6 @@
                 {% endfor %}
             </div>
         </div>
-        <!-- <button id="submit">Submit</button> -->
-        <!-- <p id="message"></p> -->
-        <!-- {% if no_more_words %}
-        <p id="message">You have completed all the words for this group!</p>
-    {% else %}
-        <a href="/group/{{ deck_name }}/{{ page + 1 }}" class="btn btn-primary">Next 5 Words</a>
-    {% endif %} -->
 
     <button id="submit" onclick="submitAndLoadNext()">Submit</button>
     {% if no_more_words %}

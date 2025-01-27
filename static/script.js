@@ -5,10 +5,6 @@ const lines = []; // Store lines for cleanup
 
 
 
-
-
-
-
 // Handle word click
 document.querySelectorAll('.word').forEach(word => {
     word.addEventListener('click', function () {
@@ -53,174 +49,92 @@ function drawLine(fromElem, toElem) {
     lines.push(line);
 }
 
+
+
 // Function to handle Submit and load the next words if the matches are correct
 function submitAndLoadNext() {
-    // Check if all the current matches are correct
-    let allCorrect = true;
     const wordItems = document.querySelectorAll('.word');
-    const definitionItems = document.querySelectorAll('.definition');
+    const matchesPayload = {};
 
+    // Prepare matches for validation
     wordItems.forEach(word => {
-        const matchedDefinition = document.querySelector(`.definition[data-definition="${matches[word.dataset.word]}"]`);
-        if (!matchedDefinition || matchedDefinition.textContent !== matches[word.dataset.word]) {
-            allCorrect = false;
+        if (matches[word.dataset.word]) {
+            matchesPayload[word.dataset.word] = matches[word.dataset.word];
         }
     });
 
-    // If all matches are correct, load the next set of words
-    if (allCorrect) {
-        resetLines();
+    const deckName = document.getElementById('deck-name').textContent;
+    const currentPage = parseInt(document.querySelector('#submit').dataset.page || 1);
 
-        const deckName = document.getElementById('deck-name').textContent;
-        const currentPage = parseInt(document.querySelector('#submit').dataset.page || 1);
+    // Validate matches through the backend
+    fetch('/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            deck: deckName,
+            matches: matchesPayload,
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.completed) {
+                    alert(data.message); // Display congratulations message
+                    document.querySelector('.game-container').innerHTML = `
+                        <div class="congratulations-message">
+                            <h2>${data.message}</h2>
+                        </div>`;
+                }else{
+                resetLines();
+                // If all matches are correct, fetch the next set of words
+                fetch(`/group/${deckName}/${currentPage + 1}`)
+                    .then(response => response.text())
+                    .then(nextPageData => {
+                        const gameContainer = document.querySelector('.game-container');
+                        const newGameContent = document.createElement('div');
+                        newGameContent.innerHTML = nextPageData;
 
-        // Fetch the next 5 words
-        fetch(`/group/${deckName}/${currentPage + 1}`)
-            .then(response => response.text())
-            .then(data => {
-                // Replace the game container with new words and definitions
-                // document.querySelector('.game-container').innerHTML = data;
-                const gameContainer = document.querySelector('.game-container');
-                const newGameContent = document.createElement('div');
-                newGameContent.innerHTML = data;
-                
-                gameContainer.innerHTML = newGameContent.querySelector('.game-container').innerHTML;
-                // Update the page number on the submit button
-                document.querySelector('#submit').dataset.page = currentPage + 1;
+                        gameContainer.innerHTML = newGameContent.querySelector('.game-container').innerHTML;
 
-                // Reinitialize word and definition click events
-                document.querySelectorAll('.word').forEach(word => {
-                    word.addEventListener('click', function () {
-                        selectedWord = this;
-                        highlight(this, 'word');
-                    });
-                });
+                        // Update the page number on the submit button
+                        document.querySelector('#submit').dataset.page = currentPage + 1;
 
-                document.querySelectorAll('.definition').forEach(def => {
-                    def.addEventListener('click', function () {
-                        selectedDefinition = this;
-                        highlight(this, 'definition');
-                        if (selectedWord && selectedDefinition) {
-                            drawLine(selectedWord, selectedDefinition);
-                            matches[selectedWord.dataset.word] = selectedDefinition.dataset.definition;
-                            selectedWord = null;
-                            selectedDefinition = null;
-                        }
-                    });
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching next words:', error);
-            });
-    } else {
-        // Display a message indicating that some matches were incorrect
-        alert("Some matches are incorrect. Please try again!");
-    }
+                        // Reinitialize click events
+                        initializeClickEvents();
+                    })
+                    .catch(error => console.error('Error fetching next words:', error));
+            } 
+        }
+            else {
+                alert(data.error || 'Incorrect matches. Please try again!');
+                resetLines();
+            }
+        })
+        .catch(error => console.error('Error validating matches:', error));
 }
 
+// Helper function to reinitialize click events
+function initializeClickEvents() {
+    document.querySelectorAll('.word').forEach(word => {
+        word.addEventListener('click', function () {
+            selectedWord = this;
+            highlight(this, 'word');
+        });
+    });
 
-
-// // Validate matches
-// document.getElementById('submit').addEventListener('click', function () {
-//     fetch('/validate', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ matches }),
-//     })
-//         .then(response => response.json())
-//         .then(data => {
-//             if (data.success) {
-//                 document.getElementById('message').textContent = 'Correct! You can proceed.';
-//                 document.getElementById('message').style.color = 'green';
-//                 if (data.message) {
-//                     // Display success message
-//                     alert(data.message); // Show the completion message
-//                 }
-//                 resetLines();
-//                 // Fetch the next set of words
-//                 loadNextWords();
-//             } else {
-//                 document.getElementById('message').textContent = data.error;
-//                 document.getElementById('message').style.color = 'red';
-//                 resetLines();
-//             }
-//         });
-// });
-
-
-// // This function is triggered when the "Next 5 Words" button is clicked
-// function loadNextWords(page) {
-//     // Get the current deck name (you can store it globally or fetch it from the DOM)
-//     const deckName = document.getElementById('deck-name').textContent;
-    
-//     // Fetch the next batch of words for the selected deck
-//     fetch(`/group/${deckName}/${page}`)
-//         .then(response => response.text())
-//         .then(data => {
-//             // Replace the existing content with the new batch of words
-//             document.querySelector('.game-container').innerHTML = data;
-            
-//             // Re-initialize event listeners after the DOM update
-//             document.querySelectorAll('.word').forEach(word => {
-//                 word.addEventListener('click', function () {
-//                     selectedWord = this;
-//                     highlight(this, 'word');
-//                 });
-//             });
-//             document.querySelectorAll('.definition').forEach(def => {
-//                 def.addEventListener('click', function () {
-//                     selectedDefinition = this;
-//                     highlight(this, 'definition');
-//                     if (selectedWord && selectedDefinition) {
-//                         drawLine(selectedWord, selectedDefinition);
-//                         matches[selectedWord.dataset.word] = selectedDefinition.dataset.definition;
-//                         selectedWord = null;
-//                         selectedDefinition = null;
-//                     }
-//                 });
-//             });
-//         })
-//         .catch(error => console.error('Error loading words:', error));
-// }
-
-
-
-// // Fetch the next set of words and render them
-// function loadNextWords() {
-//     fetch(`/group/${deckName}`)
-//     .then(response => response.text())
-//     .then(data => {
-//         // document.querySelector('.game-container').innerHTML = data;
-//         // Re-initialize events after DOM update
-//                 // Replace only the content inside the game-container
-//                 const gameContainer = document.querySelector('.game-container');
-//                 const newGameContent = document.createElement('div');
-//                 newGameContent.innerHTML = data;
-        
-//                 // Keep the existing content that you want to retain
-//                 gameContainer.innerHTML = newGameContent.querySelector('.game-container').innerHTML;
-        
-//         document.querySelectorAll('.word').forEach(word => {
-//             word.addEventListener('click', function () {
-//                 selectedWord = this;
-//                 highlight(this, 'word');
-//             });
-//         });
-
-//         document.querySelectorAll('.definition').forEach(def => {
-//             def.addEventListener('click', function () {
-//                 selectedDefinition = this;
-//                 highlight(this, 'definition');
-//                 if (selectedWord && selectedDefinition) {
-//                     drawLine(selectedWord, selectedDefinition);
-//                     matches[selectedWord.dataset.word] = selectedDefinition.dataset.definition;
-//                     selectedWord = null;
-//                     selectedDefinition = null;
-//                 }
-//             });
-//         });
-//     });
-// }
+    document.querySelectorAll('.definition').forEach(def => {
+        def.addEventListener('click', function () {
+            selectedDefinition = this;
+            highlight(this, 'definition');
+            if (selectedWord && selectedDefinition) {
+                drawLine(selectedWord, selectedDefinition);
+                matches[selectedWord.dataset.word] = selectedDefinition.dataset.definition;
+                selectedWord = null;
+                selectedDefinition = null;
+            }
+        });
+    });
+}
 
 // Reset lines and selections
 function resetLines() {

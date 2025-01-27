@@ -19,12 +19,6 @@ with open("deck_data.json", "r") as file:
 
 current_index = 0  # Track the current set of words being displayed
 
-# @app.route("/")
-# def index():
-#     global current_index
-#     # Get the next set of words (5 at a time)
-#     words_to_display = game_data["Group1"][current_index:current_index + 5]
-#     return render_template("index.html", data=words_to_display)
 
 @app.route("/")
 def index():
@@ -32,14 +26,6 @@ def index():
     decks = game_data.keys()
     return render_template("index.html", decks=decks)
 
-# @app.route("/group/<deck>")
-# def group(deck):
-#     # Get the data for the selected group
-#     group_data = game_data.get(deck)
-#     if group_data:
-#         return render_template("group.html", data=group_data, deck_name=deck)
-#     else:
-#         return "Group not found", 404
 
 @app.route("/group/<deck>/<int:page>")
 def group(deck, page):
@@ -64,22 +50,31 @@ def group(deck, page):
 @app.route("/validate", methods=["POST"])
 def validate():
     global current_index
+    deck = request.json.get('deck') 
     matches = request.json.get('matches', {})
-    correct = True  # Implement your match validation logic here
+    correct = True  # Flag to track if all matches are correct
 
-    # Check if all matches are correct
+        # Get the data for the selected group (deck)
+    group_data = game_data.get(deck)
+    
+    if not group_data:
+        return jsonify({"success": False, "error": f"Group {deck} not found."})
+
+        # Check if all matches are correct for the selected group
     for word, definition in matches.items():
-        # Implement your match checking logic, here just checking if word and definition are correct
-        correct_match = any(item['word'] == word and item['definition'] == definition for item in game_data["Group1"])
+        # Check if the word and definition exist in the group data
+        correct_match = any(item['word'] == word and item['definition'] == definition for item in group_data)
         if not correct_match:
             correct = False
             break
 
+
     if correct:
         current_index += 5  # Move to the next set of 5 words
-        if current_index >= len(game_data["Group1"]):  # If all words are completed
-            return jsonify({"success": True, "message": "Congratulations! You've completed the game."})
-        return jsonify({"success": True})
+        if current_index >= len(group_data): 
+            # return jsonify({"success": True, "message": "Congratulations! You've completed the game."})
+            return jsonify({"success": True, "completed": True, "message": "Congratulations! You've completed all words from this group."})
+        return jsonify({"success": True, "completed": False})
     else:
         return jsonify({"success": False, "error": "Incorrect matches. Please try again."})
 
