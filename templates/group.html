@@ -1,0 +1,75 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Matching Game</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/script.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
+</head>
+<body>
+    <h1>Match Words to Their Definitions</h1>
+    <div class="game-container">
+        <div class="column" id="words">
+            {% for item in data %}
+            <div class="item word" data-word="{{ item.word }}">{{ item.word }}</div>
+            {% endfor %}
+        </div>
+        <div class="column" id="definitions">
+            {% for item in data|shuffle %}
+            <div class="item definition" data-definition="{{ item.definition }}">{{ item.definition }}</div>
+            {% endfor %}
+        </div>
+    </div>
+    <button id="submit">Submit</button>
+    <p id="message"></p>
+</body>
+</html>
+
+
+
+ -->
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ deck_name }} - Word Matching</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/script.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leader-line/1.0.7/leader-line.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">{{ deck_name }} - Match Words to Their Definitions</h1>
+        <div id="deck-name" style="display: none;">{{ deck_name }}</div>
+        <div class="game-container">
+            <div class="column" id="words">
+                {% for item in data %}
+                <div class="item word" data-word="{{ item.word }}">{{ item.word }}</div>
+                {% endfor %}
+            </div>
+            <div class="column" id="definitions">
+                {% for item in data|shuffle %}
+                <div class="item definition" data-definition="{{ item.definition }}">{{ item.definition }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- <button id="submit">Submit</button> -->
+        <!-- <p id="message"></p> -->
+        <!-- {% if no_more_words %}
+        <p id="message">You have completed all the words for this group!</p>
+    {% else %}
+        <a href="/group/{{ deck_name }}/{{ page + 1 }}" class="btn btn-primary">Next 5 Words</a>
+    {% endif %} -->
+
+    <button id="submit" onclick="submitAndLoadNext()">Submit</button>
+    {% if no_more_words %}
+    <p id="message">You have completed all the words for this group!</p>
+    {% endif %}
+    </div>
+</body>
+</html>
