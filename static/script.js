@@ -101,7 +101,6 @@ function validateMatches() {
             const messageElement = document.getElementById('validation-message');
 
             if (data.success) {
-                resetLines();
                                 if (data.completed) {
                     alert(data.message); // Display congratulations message
                     document.querySelector('.game-container').innerHTML = `
@@ -112,6 +111,7 @@ function validateMatches() {
                 messageElement.textContent = 'All matches are correct!';
                 messageElement.style.color = 'green';
                 document.getElementById('submit').disabled = false; // Enable the Submit button
+                resetLines();
             } else {
                 resetLines();
                 messageElement.textContent = data.error || 'Some matches are incorrect. Please try again!';
