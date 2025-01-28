@@ -101,7 +101,7 @@ function validateMatches() {
             const messageElement = document.getElementById('validation-message');
 
             if (data.success) {
-                                if (data.completed) {
+                    if (data.completed) {
                     alert(data.message); // Display congratulations message
                     document.querySelector('.game-container').innerHTML = `
                         <div class="congratulations-message">

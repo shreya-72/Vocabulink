@@ -78,7 +78,7 @@ def validate():
             break
 
     if correct:
-        current_index += 5  # Move to the next set of 5 words
+        current_index += len(matches) # Move to the next set of 5 words
         if current_index >= len(group_data): 
             # return jsonify({"success": True, "message": "Congratulations! You've completed the game."})
             return jsonify({"success": True, "completed": True, "message": "Congratulations! You've completed all words from this group."})
