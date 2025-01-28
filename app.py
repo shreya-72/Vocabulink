@@ -60,6 +60,15 @@ def validate():
     if not group_data:
         return jsonify({"success": False, "error": f"Group {deck} not found."})
 
+        # Fetch the current group of 5 words based on current_index
+    current_group = group_data[current_index:current_index + 5]
+    words_in_group = {item['word'] for item in current_group}
+
+    # Check if all words in the current group have been matched
+    if len(matches) < len(words_in_group):
+        return jsonify({"success": False, "error": "Please match all words before validating!"})
+
+
         # Check if all matches are correct for the selected group
     for word, definition in matches.items():
         # Check if the word and definition exist in the group data
@@ -68,13 +77,12 @@ def validate():
             correct = False
             break
 
-
     if correct:
         current_index += 5  # Move to the next set of 5 words
         if current_index >= len(group_data): 
             # return jsonify({"success": True, "message": "Congratulations! You've completed the game."})
             return jsonify({"success": True, "completed": True, "message": "Congratulations! You've completed all words from this group."})
-        return jsonify({"success": True, "completed": False})
+        return jsonify({"success": True, "completed": False, "message": "All matches are correct!"})
     else:
         return jsonify({"success": False, "error": "Incorrect matches. Please try again."})
 

@@ -50,69 +50,6 @@ function drawLine(fromElem, toElem) {
 }
 
 
-
-// Function to handle Submit and load the next words if the matches are correct
-function submitAndLoadNext() {
-    const wordItems = document.querySelectorAll('.word');
-    const matchesPayload = {};
-
-    // Prepare matches for validation
-    wordItems.forEach(word => {
-        if (matches[word.dataset.word]) {
-            matchesPayload[word.dataset.word] = matches[word.dataset.word];
-        }
-    });
-
-    const deckName = document.getElementById('deck-name').textContent;
-    const currentPage = parseInt(document.querySelector('#submit').dataset.page || 1);
-
-    // Validate matches through the backend
-    fetch('/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            deck: deckName,
-            matches: matchesPayload,
-        }),
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (data.completed) {
-                    alert(data.message); // Display congratulations message
-                    document.querySelector('.game-container').innerHTML = `
-                        <div class="congratulations-message">
-                            <h2>${data.message}</h2>
-                        </div>`;
-                }else{
-                resetLines();
-                // If all matches are correct, fetch the next set of words
-                fetch(`/group/${deckName}/${currentPage + 1}`)
-                    .then(response => response.text())
-                    .then(nextPageData => {
-                        const gameContainer = document.querySelector('.game-container');
-                        const newGameContent = document.createElement('div');
-                        newGameContent.innerHTML = nextPageData;
-
-                        gameContainer.innerHTML = newGameContent.querySelector('.game-container').innerHTML;
-
-                        // Update the page number on the submit button
-                        document.querySelector('#submit').dataset.page = currentPage + 1;
-
-                        // Reinitialize click events
-                        initializeClickEvents();
-                    })
-                    .catch(error => console.error('Error fetching next words:', error));
-            } 
-        }
-            else {
-                alert(data.error || 'Incorrect matches. Please try again!');
-                resetLines();
-            }
-        })
-        .catch(error => console.error('Error validating matches:', error));
-}
-
 // Helper function to reinitialize click events
 function initializeClickEvents() {
     document.querySelectorAll('.word').forEach(word => {
@@ -134,6 +71,89 @@ function initializeClickEvents() {
             }
         });
     });
+}
+
+// Function to validate matches
+function validateMatches() {
+    const wordItems = document.querySelectorAll('.word');
+    const matchesPayload = {};
+
+    // Prepare matches for validation
+    wordItems.forEach(word => {
+        if (matches[word.dataset.word]) {
+            matchesPayload[word.dataset.word] = matches[word.dataset.word];
+        }
+    });
+
+    const deckName = document.getElementById('deck-name').textContent;
+
+    // Validate matches through the backend
+    fetch('/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            deck: deckName,
+            matches: matchesPayload,
+        }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            const messageElement = document.getElementById('validation-message');
+
+            if (data.success) {
+                resetLines();
+                                if (data.completed) {
+                    alert(data.message); // Display congratulations message
+                    document.querySelector('.game-container').innerHTML = `
+                        <div class="congratulations-message">
+                            <h2>${data.message}</h2>
+                        </div>`;
+                }
+                messageElement.textContent = 'All matches are correct!';
+                messageElement.style.color = 'green';
+                document.getElementById('submit').disabled = false; // Enable the Submit button
+            } else {
+                resetLines();
+                messageElement.textContent = data.error || 'Some matches are incorrect. Please try again!';
+                messageElement.style.color = 'red';
+                document.getElementById('submit').disabled = true; // Disable the Submit button
+            }
+        })
+        .catch(error => console.error('Error validating matches:', error));
+        resetLines();
+}
+
+// Function to load the next words
+function submitWords() {
+    if (document.getElementById('submit').disabled) {
+        alert('Please ensure all matches are correct before proceeding.');
+        return;
+    }
+
+    const deckName = document.getElementById('deck-name').textContent;
+    const currentPage = parseInt(document.querySelector('#submit').dataset.page || 1);
+
+    fetch(`/group/${deckName}/${currentPage + 1}`)
+        .then(response => response.text())
+        .then(nextPageData => {
+            const gameContainer = document.querySelector('.game-container');
+            const newGameContent = document.createElement('div');
+            newGameContent.innerHTML = nextPageData;
+
+            gameContainer.innerHTML = newGameContent.querySelector('.game-container').innerHTML;
+
+            // Reset the validation message and disable Submit
+            document.getElementById('validation-message').textContent = '';
+            document.getElementById('submit').disabled = true;
+
+            // Update the page number on the submit button
+            document.querySelector('#submit').dataset.page = currentPage + 1;
+
+            // Reinitialize click events
+            initializeClickEvents();
+        })
+        .catch(error => console.error('Error fetching next words:', error));
+        resetLines();
 }
 
 // Reset lines and selections

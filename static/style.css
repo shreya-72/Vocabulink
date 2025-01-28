@@ -3,6 +3,7 @@ body {
     text-align: center;
     margin: 0;
     padding: 20px;
+    background: radial-gradient(circle, #2a3e70, #1a2a44);
 }
 
 .game-container {
@@ -61,19 +62,32 @@ body {
 .definition {
     background-color: #eef2f3;
 }
-#submit {
-    display: block;
-    margin: 20px auto;
+.button-container {
+    display: flex; /* Use flexbox for horizontal alignment */
+    justify-content: center; /* Center the buttons horizontally */
+    gap: 10px; /* Add spacing between the buttons */
+    margin-top: 20px; /* Add some space above the buttons */
+}
+
+#check, #submit {
     padding: 10px 20px;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: auto;
+    transition: background-color 0.3s ease;
 }
 
-#submit:hover {
+#check:hover, #submit:hover {
+    background-color: #0056b3;
+}
+#submit:disabled {
+    background-color: #6c757d; /* Gray color for disabled button */
+    cursor: not-allowed; /* Show not-allowed cursor for disabled button */
+}
+
+#check:hover:not(:disabled), #submit:hover:not(:disabled) {
     background-color: #0056b3;
 }
 #message {
