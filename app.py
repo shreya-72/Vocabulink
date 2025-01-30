@@ -17,7 +17,7 @@ with open("deck_data.json", "r") as file:
     game_data = json.load(file)
 
 
-current_index = 0  # Track the current set of words being displayed
+current_index = 5  # Track the current set of words being displayed
 
 
 @app.route("/")
@@ -79,6 +79,7 @@ def validate():
 
     if correct:
         current_index += len(matches) # Move to the next set of 5 words
+        print(f"Current Index: {current_index}, Total Words: {len(group_data)}") 
         if current_index >= len(group_data): 
             # return jsonify({"success": True, "message": "Congratulations! You've completed the game."})
             return jsonify({"success": True, "completed": True, "message": "Congratulations! You've completed all words from this group."})
