@@ -162,7 +162,6 @@
         {"word": "Zealous", "definition": "Passionately devoted to a cause or goal."}
     ],
     "Group6":[
-        [
             {"word": "Admonish", "definition": "To warn or reprimand someone firmly."},
             {"word": "Aesthetic", "definition": "Concerned with beauty or the appreciation of beauty."},
             {"word": "Affectation", "definition": "A behavior or mannerism that is artificial and designed to impress others."},
@@ -193,10 +192,6 @@
             {"word": "Underscore", "definition": "To emphasize or highlight something."},
             {"word": "Venal", "definition": "Willing to accept bribes or corruption; corrupt."},
             {"word": "Venerate", "definition": "To regard or treat with deep respect or reverence."}
-        ]
         
-    ]
-
-        
-      
+    ]      
 }

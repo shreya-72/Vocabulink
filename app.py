@@ -18,7 +18,7 @@ with open("deck_data.json", "r") as file:
 
 
 current_index = 5  # Track the current set of words being displayed
-
+current_indices = {} 
 
 @app.route("/")
 def index():
@@ -29,16 +29,23 @@ def index():
 
 @app.route("/group/<deck>/<int:page>")
 def group(deck, page):
+    global current_indices
+
+    current_indices[deck] = 5
+
     # Number of words to display per page
     words_per_page = 5
     # Get the data for the selected group
     group_data = game_data.get(deck)
     
     if group_data:
+        shuffled_data = random.sample(group_data, len(group_data))
+
         # Slice the group data to get only the words for this page
         start = page * words_per_page
         end = start + words_per_page
-        words_to_display = group_data[start:end]
+        # words_to_display = group_data[start:end]
+        words_to_display = shuffled_data[start:end]
         
         # If there are no words to display (end of data), show a "no more words" message
         no_more_words = len(group_data) <= end
@@ -54,11 +61,16 @@ def validate():
     matches = request.json.get('matches', {})
     correct = True  # Flag to track if all matches are correct
 
-        # Get the data for the selected group (deck)
+    #Get the data for the selected group (deck)
     group_data = game_data.get(deck)
     
     if not group_data:
         return jsonify({"success": False, "error": f"Group {deck} not found."})
+        # Ensure current index tracking exists for this deck
+    if deck not in current_indices:
+        current_indices[deck] = 5
+
+    current_index = current_indices[deck]
 
         # Fetch the current group of 5 words based on current_index
     current_group = group_data[current_index:current_index + 5]
@@ -78,9 +90,12 @@ def validate():
             break
 
     if correct:
-        current_index += len(matches) # Move to the next set of 5 words
-        # print(f"Current Index: {current_index}, Total Words: {len(group_data)}") 
-        if current_index >= len(group_data): 
+        current_indices[deck] += len(matches)  # Move to the next set of words
+        new_index = current_indices[deck]
+
+        # current_index += len(matches) # Move to the next set of 5 words
+        print(f"Current Index: {new_index}, Total Words: {len(group_data)}") 
+        if new_index >= len(group_data): 
             # return jsonify({"success": True, "message": "Congratulations! You've completed the game."})
             return jsonify({"success": True, "completed": True, "message": "Congratulations! You've completed all words from this group."})
         return jsonify({"success": True, "completed": False, "message": "All matches are correct!"})

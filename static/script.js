@@ -111,7 +111,7 @@ function validateMatches() {
                 messageElement.textContent = 'All matches are correct!';
                 messageElement.style.color = 'green';
                 document.getElementById('submit').disabled = false; // Enable the Submit button
-                resetLines();
+                // resetLines();
             } else {
                 resetLines();
                 messageElement.textContent = data.error || 'Some matches are incorrect. Please try again!';
@@ -120,7 +120,7 @@ function validateMatches() {
             }
         })
         .catch(error => console.error('Error validating matches:', error));
-        resetLines();
+        // resetLines();
 }
 
 // Function to load the next words
@@ -132,6 +132,7 @@ function submitWords() {
 
     const deckName = document.getElementById('deck-name').textContent;
     const currentPage = parseInt(document.querySelector('#submit').dataset.page || 1);
+    resetLines();
 
     fetch(`/group/${deckName}/${currentPage + 1}`)
         .then(response => response.text())
